@@ -27,12 +27,44 @@ var menu = [
     'Quit Program'
 ];
 
+var users = [
+    { login : 1 , password : 111, permissions : 7 },       // create| delete | read
+    { login : 2 , password : 222, permissions : 3 },       // delete | read
+    { login : 3 , password : 333, permissions : 1 },       // read
+    { login : 4 , password : 444, permissions : 0 }        // no permissions
+]
+var currentUser;
+const READ   = 1; //001
+const DELETE = 2; //010
+const CREATE = 4; //100
 
 main();
 
 function main() {
+    login();
+
     while(!exit)
         showMenu();
+}
+
+function login() {
+    var userName  = readlineSync.question("Login :");
+    var userPassword = readlineSync.question("Password :", { hideEchoBack: true });
+    for(var i in users) {
+        if(users[i].login == userName && users[i].password == userPassword){
+            currentUser = i;
+            return;
+        }
+    }
+    console.log("Error! No such user");
+    exit = true;
+}
+
+function checkPermission(mode){
+    return users[currentUser].permissions & mode;
+}
+function getPermission() {
+    return users[currentUser].permissions;
 }
 
 function showMenu() {
@@ -132,6 +164,7 @@ function findFather() {
 
 
 function printCurrentFolder() {
+
     var currentFolder = findCurrentFolder();
 
     console.log(currentFolder.name);
@@ -147,6 +180,11 @@ function printCurrentFolder() {
 
 
 function deleteFile() {
+    if(!checkPermission(DELETE)){
+        console.log("Error! You have now permission for this operation");
+        return;
+    }
+
     var fileName = readlineSync.question("Insert file/folder name :");
 
     var currentFolder = findCurrentFolder();
@@ -163,6 +201,11 @@ function deleteFile() {
 
 
 function createFile() {
+    if(!checkPermission(CREATE)){
+        console.log("Error! You have now permission for this operation");
+        return;
+    }
+
     var fileName = readlineSync.question("Insert file/folder name :");
 
     var currentFolder = findCurrentFolder();
@@ -227,6 +270,11 @@ function changeCurrentFolder() {
 
 
 function openFile() {
+    if(!checkPermission(READ)){
+        console.log("Error! You have now permission for this operation");
+        return;
+    }
+
     var fileName = readlineSync.question("Insert file name :");
 
     if(fileName == '') {
